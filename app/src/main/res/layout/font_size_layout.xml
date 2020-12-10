@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/post_menu_top_font_size_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/black"
+    android:orientation="horizontal">
+
+    <androidx.appcompat.widget.AppCompatSeekBar
+        android:id="@+id/post_menu_top_font_size_seek_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:padding="8dp"
+        android:progress="0"
+        android:progressTint="@color/white"
+        android:thumbTint="@color/white"/>
+
+
+
+</LinearLayout>

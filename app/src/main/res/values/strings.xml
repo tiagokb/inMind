@@ -1,0 +1,41 @@
+<resources>
+    <string name="app_name">inMind</string>
+    <string name="pin">PIN</string>
+    <string name="login">Entrar</string>
+    <string name="text_pin_signup">Cadastre um PIN de 4 numeros, ele será usado para entrar no aplicativo \n Não perca esse número ou não será capaz de entrar</string>
+    <string name="active_biometric">Ativar autenticação biométrica</string>
+    <string name="signup">Cadastrar</string>
+    <string name="title">Titulo</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Configurações</string>
+
+    <string name="menu_notes">Rascunhos</string>
+    <string name="menu_in_mind">inMinds</string>
+    <string name="menu_feed">Time Line</string>
+    <string name="user_not_registered">Usuário não cadastrado</string>
+    <string name="inMider">inMinder</string>
+    <string name="name">Nome</string>
+    <string name="e_mail">E-mail</string>
+    <string name="save_profile">Salvar Alterações</string>
+    <string name="post_slogan">O que está na sua mente?</string>
+
+    <string-array name="lista_font">
+        <item>arial</item>
+        <item>arialbd</item>
+        <item>arialbi</item>
+        <item>ariali</item>
+        <item>ariblk</item>
+        <item>calibri</item>
+        <item>calibrib</item>
+        <item>calibrii</item>
+        <item>calibril</item>
+        <item>calibrili</item>
+        <item>calibriz</item>
+        <item>cambriab</item>
+        <item>cambriai</item>
+        <item>cambriaz</item>
+        <item>inkfree</item>
+    </string-array>
+</resources>

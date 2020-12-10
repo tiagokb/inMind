@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/post_menu_top_font_size_layout"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:background="#dfdfdf"
+    android:orientation="vertical"
+    android:layout_gravity="end">
+
+    <ImageView
+        android:id="@+id/color_white"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:background="@color/white" />
+
+    <ImageView
+        android:id="@+id/color_black"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:background="@color/black" />
+
+    <ImageView
+        android:id="@+id/color_red"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:background="@color/red" />
+
+    <ImageView
+        android:id="@+id/color_orange"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:background="@color/orange" />
+
+    <ImageView
+        android:id="@+id/color_green"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:background="@color/green" />
+
+    <ImageView
+        android:id="@+id/color_dark_green"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:background="@color/dark_green" />
+
+    <ImageView
+        android:id="@+id/color_yellow"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:background="@color/yellow" />
+
+    <ImageView
+        android:id="@+id/color_blue"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:background="@color/blue" />
+
+    <ImageView
+        android:id="@+id/color_light_blue"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:background="@color/light_blue" />
+
+    <ImageView
+        android:id="@+id/color_pink"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:background="@color/pink" />
+</LinearLayout>

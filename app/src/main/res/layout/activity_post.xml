@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.PostActivity">
+
+    <EditText
+        android:id="@+id/text_post"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:hint="@string/post_slogan"
+        android:padding="36dp"
+        android:gravity="bottom|end"
+        android:textSize="64sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/post_menu_bottom"/>
+
+    <include
+        android:id="@+id/post_menu_top_font_size"
+        layout="@layout/font_size_layout"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/post_menu_top_font_type"
+        layout="@layout/font_edit_layout"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/post_menu_top_font_color"
+        layout="@layout/color_pallet_layout"
+        android:visibility="gone" />
+
+    <include layout="@layout/text_gravity_layout"
+        android:id="@+id/post_text_gravity_layout"
+        android:visibility="gone"/>
+
+    <include
+        android:id="@+id/post_menu_bottom"
+        layout="@layout/text_bottom_menu_layout" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
