@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.KeepInMind">
-        <activity android:name=".ui.fragments.FeedActivity"></activity>
+        <activity android:name=".ui.FeedActivity"></activity>
         <activity android:name=".ui.PostActivity" />
         <activity android:name=".ui.ProfileActivity" />
         <activity android:name=".ui.NotesActivity" />

@@ -8,7 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.keepinmind.models.NotesModel
 import com.example.keepinmind.repo.AnnotationRepository
 
-class NotesActivityViewModel(application: Application): AndroidViewModel(application) {
+class NotesActivityViewModel(application: Application) : AndroidViewModel(application) {
 
     private val context: Context = application.applicationContext
     private val repo = AnnotationRepository(context)
@@ -19,9 +19,12 @@ class NotesActivityViewModel(application: Application): AndroidViewModel(applica
     private val mEditModel = MutableLiveData<NotesModel>()
     val editModel: LiveData<NotesModel> = mEditModel
 
+    fun verifyBlankSpace(title: String, content: String): Boolean {
+        return (title.isEmpty() || title.isBlank() || content.isBlank() || content.isEmpty())
+    }
+
     fun insertAnnotation(title: String, content: String) {
-        if (title.isEmpty() || title.isBlank() || content.isBlank() || content.isEmpty()){
-            mSaveResponse.value = false
+        if (verifyBlankSpace(title, content)){
             return
         }
 

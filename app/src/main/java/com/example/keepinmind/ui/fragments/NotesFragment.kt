@@ -16,13 +16,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.keepinmind.R
 import com.example.keepinmind.adapters.MainAdapter
 import com.example.keepinmind.listener.MainListener
+import com.example.keepinmind.listener.MenuSelectListener
 import com.example.keepinmind.models.NotesModel
 import com.example.keepinmind.ui.NotesActivity
 import com.example.keepinmind.ui.MainActivity
+import com.example.keepinmind.ui.PostActivity
 import com.example.keepinmind.viewmodel.MainActivityViewModel
 import com.example.keepinmind.viewmodelfactory.MainActivityViewModelFactory
 
 class NotesFragment : Fragment() {
+
+    companion object{
+        val KEY_NOTES_FRAGMENT = "key_notes_fragments"
+    }
 
     private lateinit var homeViewModel: MainActivityViewModel
     private lateinit var rv: RecyclerView
@@ -50,7 +56,7 @@ class NotesFragment : Fragment() {
             }
 
             override fun onLongClick(model: NotesModel) {
-                deleteConfirmation(model)
+                openMenuOptions(model)
             }
 
         })
@@ -59,6 +65,23 @@ class NotesFragment : Fragment() {
         observe()
 
         return root
+    }
+
+    private fun openMenuOptions(model: NotesModel) {
+        val dialogFragment = MenuDialogFragment(model, object : MenuSelectListener {
+            override fun select(selectedAction: String, model: NotesModel) {
+                when (selectedAction){
+                    MenuDialogFragment.MODE_DELETE -> deleteConfirmation(model)
+                    MenuDialogFragment.MODE_POST -> {
+                        val intent = Intent(requireContext(), PostActivity::class.java)
+                        intent.putExtra(KEY_NOTES_FRAGMENT, model.id)
+                        startActivity(intent)
+                    }
+                }
+            }
+        })
+
+        dialogFragment.show(requireActivity().supportFragmentManager, "MenuFragment")
     }
 
     private fun observe() {

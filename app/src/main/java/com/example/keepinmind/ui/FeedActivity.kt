@@ -1,4 +1,4 @@
-package com.example.keepinmind.ui.fragments
+package com.example.keepinmind.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle

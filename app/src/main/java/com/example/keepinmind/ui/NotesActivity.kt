@@ -1,5 +1,6 @@
 package com.example.keepinmind.ui
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -11,6 +12,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.keepinmind.R
 import com.example.keepinmind.models.NotesModel
+import com.example.keepinmind.ui.fragments.MenuDialogFragment
+import com.example.keepinmind.ui.fragments.NotesFragment
 import com.example.keepinmind.viewmodel.NotesActivityViewModel
 import com.example.keepinmind.viewmodelfactory.NotesActivityViewModelFactory
 
@@ -21,6 +24,8 @@ class NotesActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var cancel: ImageView
     private lateinit var save: ImageView
     private lateinit var viewModel: NotesActivityViewModel
+
+    private lateinit var newPost: ImageView
 
     private var id = 0
 
@@ -38,11 +43,15 @@ class NotesActivity : AppCompatActivity(), View.OnClickListener {
         cancel = findViewById(R.id.annotation_iv_cancel)
         save = findViewById(R.id.annotation_iv_save)
 
-        isEditMode()
+        newPost = findViewById(R.id.notes_iv_new_post)
+
         observe()
+        isEditMode()
+
 
         cancel.setOnClickListener(this)
         save.setOnClickListener(this)
+        newPost.setOnClickListener(this)
     }
 
     private fun isEditMode() {
@@ -81,12 +90,34 @@ class NotesActivity : AppCompatActivity(), View.OnClickListener {
                     } else {
                         val finalTitle = title.text.toString()
                         val finalContent = content.text.toString()
+
+                        if (viewModel.verifyBlankSpace(finalTitle, finalContent)) {
+                            Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT)
+                                .show()
+                            return
+                        }
+
                         val model = NotesModel(id, finalTitle, finalContent)
                         viewModel.updateModel(model)
                     }
                 }
                 R.id.annotation_iv_cancel -> {
                     makeAlertDialog()
+                }
+                newPost.id -> {
+                    val finalTitle = title.text.toString()
+                    val finalContent = content.text.toString()
+
+                    if (viewModel.verifyBlankSpace(finalTitle, finalContent)) {
+                        Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT)
+                            .show()
+                        return
+                    }
+
+                    val postIntent = Intent(this, PostActivity::class.java)
+                    postIntent.putExtra(NotesFragment.KEY_NOTES_FRAGMENT, id)
+                    startActivity(postIntent)
+                    finish()
                 }
             }
         }
@@ -106,6 +137,9 @@ class NotesActivity : AppCompatActivity(), View.OnClickListener {
             .setCancelable(false)
 
         dialog.create().show()
+    }
 
+    override fun onBackPressed() {
+        return makeAlertDialog()
     }
 }

@@ -8,22 +8,16 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
-import androidx.core.view.get
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.FragmentNavigator
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.keepinmind.R
-import com.example.keepinmind.ui.fragments.FeedActivity
 import com.example.keepinmind.viewmodel.MainActivityViewModel
 import com.example.keepinmind.viewmodelfactory.MainActivityViewModelFactory
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -132,17 +126,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         val actualFragment = navigationController.currentBackStackEntry?.destination?.label
 
         when (v.id) {
-            R.id.fab -> when (actualFragment){
+            R.id.fab -> when (actualFragment) {
                 "Rascunhos" -> navToActivity(NotesActivity::class.java)
-                "inMinds" -> {navToActivity(PostActivity::class.java)}
-                "Time Line" -> {navToActivity(FeedActivity::class.java)}
+                "inMinds" -> {
+                    navToActivity(PostActivity::class.java)
+                }
+                "Time Line" -> {
+                    navToActivity(FeedActivity::class.java)
+                }
             }
-           R.id.nav_header_edit -> navToActivity(ProfileActivity::class.java)
-       }
-
-        v
-
-
+            R.id.nav_header_edit -> navToActivity(ProfileActivity::class.java)
+        }
     }
 
     private fun <T> navToActivity(targetActivity: Class<T>) {

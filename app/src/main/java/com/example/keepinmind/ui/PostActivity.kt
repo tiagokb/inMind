@@ -3,7 +3,6 @@ package com.example.keepinmind.ui
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,19 +11,32 @@ import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
-import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.keepinmind.R
 import com.example.keepinmind.listener.ColorClickListener
 import com.example.keepinmind.listener.IntentPickListener
 import com.example.keepinmind.ui.fragments.IntentDialogFragment
+import com.example.keepinmind.ui.fragments.NotesFragment
+import com.example.keepinmind.viewmodel.PostActivityViewModel
+import com.example.keepinmind.viewmodelfactory.PostActivityViewModelFactory
 
 class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBarChangeListener,
     AdapterView.OnItemSelectedListener {
 
+    private lateinit var viewModel: PostActivityViewModel
+
     private var REQUEST_CODE = 0
     private var colorChangingRequestCode = 0
+
+    private var ID_MODE = 0
+
+    //toolbar
+    private lateinit var toolbar: Toolbar
 
     //content, the user will edit this elements
     private lateinit var photo: ImageView
@@ -95,6 +107,19 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_post)
+
+        viewModel = ViewModelProvider(this, PostActivityViewModelFactory(application))
+            .get(PostActivityViewModel::class.java)
+
+        toolbar = findViewById(R.id.post_toolbar)
+        setSupportActionBar(toolbar)
+
+        //Set the config of the toolbar inside the if
+        supportActionBar?.let {
+            it.setDisplayShowTitleEnabled(true)
+            it.setDisplayHomeAsUpEnabled(true)
+            it.setHomeAsUpIndicator(R.drawable.arrow_back)
+        }
 
         photo = findViewById(R.id.post_photo_background)
         text = findViewById(R.id.text_post)
@@ -208,7 +233,27 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
             gravityBottomEnd
         )
 
-        sideLayoutImage.performClick()
+        observe()
+
+        sideLayoutText.performClick()
+
+        isEditMode()
+    }
+
+    private fun observe() {
+        viewModel.modelLoader.observe(this, Observer {
+            text.setText(it.subTitle)
+        })
+    }
+
+    private fun isEditMode() {
+        val intent: Int = intent.getIntExtra(NotesFragment.KEY_NOTES_FRAGMENT, 0)
+        if (intent == 0){
+            return
+        }
+
+        ID_MODE = intent
+        viewModel.loadModel(ID_MODE)
     }
 
     private fun setOnSideMenuClickListener(
@@ -629,7 +674,6 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
         Log.e("spinner", "onNothingSelected")
     }
 
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
         if (resultCode != RESULT_OK || data == null) {
@@ -654,5 +698,23 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
         }
 
         super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    private fun makeDialogConfirmation(): Unit {
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Voltar")
+            .setMessage("Tudo que não foi salvo será perdido, deseja continuar?")
+            .setCancelable(false)
+            .setNegativeButton("Continuar editando") { _, _ ->
+            }
+            .setPositiveButton("Sair") { _, _ ->
+                finish()
+            }
+
+        return dialog.create().show()
+    }
+
+    override fun onBackPressed() {
+        return makeDialogConfirmation()
     }
 }
