@@ -1,28 +1,63 @@
 package com.example.keepinmind.ui
 
-import android.graphics.Paint
-import android.graphics.Typeface
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.TypefaceCompat
+import androidx.fragment.app.DialogFragment
 import com.example.keepinmind.R
+import com.example.keepinmind.listener.ColorClickListener
+import com.example.keepinmind.listener.IntentPickListener
+import com.example.keepinmind.ui.fragments.IntentDialogFragment
 
-class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBarChangeListener, AdapterView.OnItemSelectedListener{
+class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBarChangeListener,
+    AdapterView.OnItemSelectedListener {
 
+    private var REQUEST_CODE = 0
+    private var colorChangingRequestCode = 0
+
+    //content, the user will edit this elements
+    private lateinit var photo: ImageView
+    private lateinit var text: EditText
+
+    //side layout to select how element will be edited
+    private lateinit var sideSelector: LinearLayout
+
+    //side layout elements
+    private lateinit var sideLayoutImage: ImageView
+    private lateinit var sideLayoutText: ImageView
+
+    //the two bottom layouts - for image editing and text editing
+    private lateinit var bottomTextLayout: LinearLayout
+    private lateinit var bottomPhotoLayout: LinearLayout
+
+    //bottom text layout elements
     private lateinit var fontTypeSelector: ImageView
     private lateinit var fontSizeSelector: ImageView
-    private lateinit var colorSelector: ImageView
     private lateinit var textGravitySelector: ImageView
 
-    private lateinit var bottomLayout: LinearLayout
+    //bottom photo layout elements
+    private lateinit var photoUpload: ImageView
+    private lateinit var photoShadow: ImageView
 
+    //colorSelector - for two bottomlayouts
+    private lateinit var fontColorSelector: ImageView
+    private lateinit var photoColorSelector: ImageView
+
+    private lateinit var photoShadowSelector: View
+    private lateinit var photoBackgroundColor: View
+
+    //bottomTextLayout actions
     private lateinit var textSize: SeekBar
     private lateinit var textFont: Spinner
     private lateinit var fontList: Array<String>
@@ -38,6 +73,7 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
     private lateinit var colorBlue: ImageView
     private lateinit var colorLightBlue: ImageView
     private lateinit var colorPink: ImageView
+    private lateinit var colorTransparent: ImageView
 
     //gravity Buttons
     private lateinit var gravityTopStart: ImageView
@@ -50,21 +86,41 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
     private lateinit var gravityBottomCenter: ImageView
     private lateinit var gravityBottomEnd: ImageView
 
-
-    private lateinit var text: EditText
-
-
+    //includer layout for editing components
     private lateinit var includerFontTypeTopMenuLayout: LinearLayout
     private lateinit var includerFontSizeTopMenuLayout: LinearLayout
-    private lateinit var includerFontColorTopMenuLayout: LinearLayout
+    private lateinit var includerColorSideMenuLayout: LinearLayout
     private lateinit var includerTextGravityLayout: ConstraintLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_post)
 
+        photo = findViewById(R.id.post_photo_background)
         text = findViewById(R.id.text_post)
 
+        sideSelector = findViewById(R.id.post_menu_side_chooser)
+
+        sideLayoutImage = findViewById(R.id.side_menu_iv_photo)
+        sideLayoutText = findViewById(R.id.side_menu_iv_text)
+
+        bottomTextLayout = findViewById(R.id.post_menu_bottom_text)
+        bottomPhotoLayout = findViewById(R.id.post_menu_bottom_photo)
+
+        fontTypeSelector = findViewById(R.id.post_menu_bottom_font_type)
+        fontSizeSelector = findViewById(R.id.post_menu_bottom_font_size)
+        textGravitySelector = findViewById(R.id.post_menu_bottom_text_position)
+
+        photoUpload = findViewById(R.id.post_menu_bottom_photo_upload)
+        photoShadow = findViewById(R.id.post_menu_bottom_photo_shadow)
+
+        fontColorSelector = findViewById(R.id.post_menu_bottom_font_color)
+        photoColorSelector = findViewById(R.id.post_menu_bottom_photo_color)
+
+        photoShadowSelector = findViewById(R.id.post_background_shadow)
+        photoBackgroundColor = findViewById(R.id.post_background_color)
+
+        textSize = findViewById(R.id.post_menu_top_font_size_seek_bar)
         textFont = findViewById(R.id.post_menu_top_font_type_spinner)
         fontList = resources.getStringArray(R.array.lista_font)
         ArrayAdapter.createFromResource(
@@ -75,10 +131,6 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             textFont.adapter = adapter
         }
-
-        textFont.onItemSelectedListener = this
-
-        textSize = findViewById(R.id.post_menu_top_font_size_seek_bar)
 
         //Initialize color buttons
 
@@ -92,6 +144,7 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
         colorBlue = findViewById(R.id.color_blue)
         colorLightBlue = findViewById(R.id.color_light_blue)
         colorPink = findViewById(R.id.color_pink)
+        colorTransparent = findViewById(R.id.color_transparent)
 
         //////////////////////////////
 
@@ -109,22 +162,26 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
 
         //////////////////////////////
 
-        fontTypeSelector = findViewById(R.id.post_menu_bottom_font_type)
-        fontSizeSelector = findViewById(R.id.post_menu_bottom_font_size)
-        colorSelector = findViewById(R.id.post_menu_bottom_font_color)
-        textGravitySelector = findViewById(R.id.post_menu_bottom_text_position)
-
-        bottomLayout = findViewById(R.id.post_menu_bottom)
-
         includerFontTypeTopMenuLayout = findViewById(R.id.post_menu_top_font_type)
         includerFontSizeTopMenuLayout = findViewById(R.id.post_menu_top_font_size)
-        includerFontColorTopMenuLayout = findViewById(R.id.post_menu_top_font_color)
+        includerColorSideMenuLayout = findViewById(R.id.post_menu_top_font_color)
         includerTextGravityLayout = findViewById(R.id.post_text_gravity_layout)
 
+        setOnSideMenuClickListener(sideLayoutImage, sideLayoutText)
 
+        setOnClickListener(
+            fontTypeSelector,
+            fontSizeSelector,
+            fontColorSelector,
+            photoColorSelector,
+            textGravitySelector,
+            photoUpload,
+            photoShadow
+        )
 
-        setOnClickListener(fontTypeSelector, fontSizeSelector, colorSelector, textGravitySelector)
+        textFont.onItemSelectedListener = this
 
+        textSize.setOnSeekBarChangeListener(this)
 
         setOnColorClickListener(
             colorWhite,
@@ -151,8 +208,57 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
             gravityBottomEnd
         )
 
-        textSize.setOnSeekBarChangeListener(this)
+        sideLayoutImage.performClick()
+    }
 
+    private fun setOnSideMenuClickListener(
+        sideLayoutImage: ImageView,
+        sideLayoutText: ImageView
+    ) {
+        sideLayoutImage.setOnClickListener {
+            text.visibility = View.GONE
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                sideLayoutImage.drawable.setTint(
+                    resources.getColor(
+                        R.color.white, theme
+                    )
+                )
+                sideLayoutText.drawable.setTint(
+                    resources.getColor(
+                        R.color.notSelectedItemMenu, theme
+                    )
+                )
+            } else {
+                sideLayoutImage.drawable.setTint(resources.getColor(R.color.white))
+                sideLayoutText.drawable.setTint(resources.getColor(R.color.notSelectedItemMenu))
+            }
+
+            bottomTextLayout.visibility = View.GONE
+            bottomPhotoLayout.visibility = View.VISIBLE
+        }
+        sideLayoutText.setOnClickListener {
+            text.visibility = View.VISIBLE
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                sideLayoutImage.drawable.setTint(
+                    resources.getColor(
+                        R.color.notSelectedItemMenu, theme
+                    )
+                )
+                sideLayoutText.drawable.setTint(
+                    resources.getColor(
+                        R.color.white, theme
+                    )
+                )
+            } else {
+                sideLayoutImage.drawable.setTint(resources.getColor(R.color.notSelectedItemMenu))
+                sideLayoutText.drawable.setTint(resources.getColor(R.color.white))
+            }
+
+            bottomPhotoLayout.visibility = View.GONE
+            bottomTextLayout.visibility = View.VISIBLE
+        }
     }
 
     private fun setOnGravityClick(
@@ -172,55 +278,64 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
             text.gravity = Gravity.TOP or Gravity.START
             includerTextGravityLayout.visibility = View.GONE
             text.visibility = View.VISIBLE
-            bottomLayout.visibility = View.VISIBLE
+            bottomTextLayout.visibility = View.VISIBLE
+            sideSelector.visibility = View.VISIBLE
         }
         gravityTopCenter.setOnClickListener {
             text.gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
             includerTextGravityLayout.visibility = View.GONE
             text.visibility = View.VISIBLE
-            bottomLayout.visibility = View.VISIBLE
+            bottomTextLayout.visibility = View.VISIBLE
+            sideSelector.visibility = View.VISIBLE
         }
         gravityTopEnd.setOnClickListener {
             text.gravity = Gravity.TOP or Gravity.END
             includerTextGravityLayout.visibility = View.GONE
             text.visibility = View.VISIBLE
-            bottomLayout.visibility = View.VISIBLE
+            bottomTextLayout.visibility = View.VISIBLE
+            sideSelector.visibility = View.VISIBLE
         }
         gravityCenterStart.setOnClickListener {
             text.gravity = Gravity.CENTER_VERTICAL or Gravity.START
             includerTextGravityLayout.visibility = View.GONE
             text.visibility = View.VISIBLE
-            bottomLayout.visibility = View.VISIBLE
+            bottomTextLayout.visibility = View.VISIBLE
+            sideSelector.visibility = View.VISIBLE
         }
         gravityCenter.setOnClickListener {
             text.gravity = Gravity.CENTER
             includerTextGravityLayout.visibility = View.GONE
             text.visibility = View.VISIBLE
-            bottomLayout.visibility = View.VISIBLE
+            bottomTextLayout.visibility = View.VISIBLE
+            sideSelector.visibility = View.VISIBLE
         }
         gravityCenterEnd.setOnClickListener {
             text.gravity = Gravity.CENTER_VERTICAL or Gravity.END
             includerTextGravityLayout.visibility = View.GONE
             text.visibility = View.VISIBLE
-            bottomLayout.visibility = View.VISIBLE
+            bottomTextLayout.visibility = View.VISIBLE
+            sideSelector.visibility = View.VISIBLE
         }
         gravityBottomStart.setOnClickListener {
             text.gravity = Gravity.BOTTOM or Gravity.START
             includerTextGravityLayout.visibility = View.GONE
             text.visibility = View.VISIBLE
-            bottomLayout.visibility = View.VISIBLE
+            bottomTextLayout.visibility = View.VISIBLE
+            sideSelector.visibility = View.VISIBLE
         }
         gravityBottomCenter.setOnClickListener {
             text.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
             includerTextGravityLayout.visibility = View.GONE
             text.visibility = View.VISIBLE
-            bottomLayout.visibility = View.VISIBLE
+            bottomTextLayout.visibility = View.VISIBLE
+            sideSelector.visibility = View.VISIBLE
         }
         gravityBottomEnd.setOnClickListener {
             text.gravity = Gravity.BOTTOM or Gravity.END
             includerTextGravityLayout.visibility = View.GONE
             text.visibility = View.VISIBLE
-            bottomLayout.visibility = View.VISIBLE
+            bottomTextLayout.visibility = View.VISIBLE
+            sideSelector.visibility = View.VISIBLE
         }
 
 
@@ -238,134 +353,163 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
         colorLightBlue: ImageView,
         colorPink: ImageView
     ) {
+        val listener: ColorClickListener = object : ColorClickListener {
+            override fun colorChanging(requestCode: Int, colorId: Int) {
+                if (requestCode > 0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        text.setTextColor(resources.getColor(colorId, theme))
+                    } else {
+                        text.setTextColor(resources.getColor(colorId))
+                    }
+                } else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        photoBackgroundColor.setBackgroundColor(resources.getColor(colorId, theme))
+                    } else {
+                        photoBackgroundColor.setBackgroundColor(resources.getColor(colorId))
+                    }
+                }
+            }
+
+        }
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             Log.e("teste", "new textColor")
             colorWhite.setOnClickListener {
-                text.setTextColor(
-                    resources.getColor(
-                        R.color.white,
-                        theme
-                    )
-                )
+                listener.colorChanging(colorChangingRequestCode, R.color.white)
             }
             colorBlack.setOnClickListener {
-                text.setTextColor(
-                    resources.getColor(
-                        R.color.black,
-                        theme
-                    )
-                )
+                listener.colorChanging(colorChangingRequestCode, R.color.black)
             }
             colorRed.setOnClickListener {
-                text.setTextColor(
-                    resources.getColor(
-                        R.color.red,
-                        theme
-                    )
-                )
+                listener.colorChanging(colorChangingRequestCode, R.color.red)
             }
             colorOrange.setOnClickListener {
-                text.setTextColor(
-                    resources.getColor(
-                        R.color.orange,
-                        theme
-                    )
-                )
+                listener.colorChanging(colorChangingRequestCode, R.color.orange)
             }
             colorGreen.setOnClickListener {
-                text.setTextColor(
-                    resources.getColor(
-                        R.color.green,
-                        theme
-                    )
-                )
+                listener.colorChanging(colorChangingRequestCode, R.color.green)
             }
             colorDarkGreen.setOnClickListener {
-                text.setTextColor(
-                    resources.getColor(
-                        R.color.dark_green,
-                        theme
-                    )
-                )
+                listener.colorChanging(colorChangingRequestCode, R.color.dark_green)
             }
             colorYellow.setOnClickListener {
-                text.setTextColor(
-                    resources.getColor(
-                        R.color.yellow,
-                        theme
-                    )
-                )
+                listener.colorChanging(colorChangingRequestCode, R.color.yellow)
             }
             colorBlue.setOnClickListener {
-                text.setTextColor(
-                    resources.getColor(
-                        R.color.blue,
-                        theme
-                    )
-                )
+                listener.colorChanging(colorChangingRequestCode, R.color.blue)
             }
             colorLightBlue.setOnClickListener {
-                text.setTextColor(
-                    resources.getColor(
-                        R.color.light_blue,
-                        theme
-                    )
-                )
+                listener.colorChanging(colorChangingRequestCode, R.color.light_blue)
             }
             colorPink.setOnClickListener {
-                text.setTextColor(
-                    resources.getColor(
-                        R.color.pink,
-                        theme
-                    )
-                )
+                listener.colorChanging(colorChangingRequestCode, R.color.pink)
             }
-
-        } else {
-            Log.e("teste", "old textColor")
-            colorWhite.setOnClickListener { text.setTextColor(resources.getColor(R.color.white)) }
-            colorBlack.setOnClickListener { text.setTextColor(resources.getColor(R.color.black)) }
-            colorRed.setOnClickListener { text.setTextColor(resources.getColor(R.color.red)) }
-            colorOrange.setOnClickListener { text.setTextColor(resources.getColor(R.color.orange)) }
-            colorGreen.setOnClickListener { text.setTextColor(resources.getColor(R.color.green)) }
-            colorDarkGreen.setOnClickListener { text.setTextColor(resources.getColor(R.color.dark_green)) }
-            colorYellow.setOnClickListener { text.setTextColor(resources.getColor(R.color.yellow)) }
-            colorBlue.setOnClickListener { text.setTextColor(resources.getColor(R.color.blue)) }
-            colorLightBlue.setOnClickListener { text.setTextColor(resources.getColor(R.color.light_blue)) }
-            colorPink.setOnClickListener { text.setTextColor(resources.getColor(R.color.pink)) }
+            colorTransparent.setOnClickListener {
+                listener.colorChanging(colorChangingRequestCode, android.R.color.transparent)
+            }
         }
     }
 
     private fun setOnClickListener(
         fontTypeSelector: ImageView,
         fontSizeSelector: ImageView,
-        colorSelector: ImageView,
-        textGravitySelector: ImageView
+        fontColorSelector: ImageView,
+        photoColorSelector: ImageView,
+        textGravitySelector: ImageView,
+        photoUpload: ImageView,
+        photoShadow: ImageView
     ) {
         fontTypeSelector.setOnClickListener(this)
         fontSizeSelector.setOnClickListener(this)
-        colorSelector.setOnClickListener(this)
+        fontColorSelector.setOnClickListener(this)
+        photoColorSelector.setOnClickListener(this)
         textGravitySelector.setOnClickListener(this)
+        photoUpload.setOnClickListener(this)
+        photoShadow.setOnClickListener(this)
     }
 
     override fun onClick(v: View) {
         when (v.id) {
             fontTypeSelector.id -> editFontType()
             fontSizeSelector.id -> editFontSize()
-            colorSelector.id -> editFontColor()
+            fontColorSelector.id -> editColorFromText()
+            photoColorSelector.id -> editColorFromPhoto()
             textGravitySelector.id -> setTextGravity()
+            photoUpload.id -> uploadPhoto()
+            photoShadow.id -> editShadow()
         }
     }
 
-    private fun editFontColor() {
+    private fun uploadPhoto() {
+        val dialogInterface = IntentDialogFragment(object : IntentPickListener {
+            override fun actionPick(requestCode: Int) {
+                REQUEST_CODE = requestCode
+                intentTakeAShotOrImageFromGallery()
+            }
+        })
 
-        if (includerFontColorTopMenuLayout.visibility == View.VISIBLE) {
-            includerFontColorTopMenuLayout.visibility = View.GONE
+        dialogInterface.show(supportFragmentManager, "intentInterface")
+    }
+
+    private fun intentTakeAShotOrImageFromGallery() {
+        when (REQUEST_CODE) {
+            1 -> openCamera()
+            2 -> openGallery()
+        }
+    }
+
+    private fun openCamera() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        startActivityForResult(takePictureIntent, 1)
+    }
+
+    private fun openGallery() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "image/*"
+
+        val pickIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        pickIntent.type = "image/*"
+
+        val chooserIntent = Intent.createChooser(intent, "Select Image")
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(pickIntent))
+
+        startActivityForResult(chooserIntent, 2)
+    }
+
+    private fun editShadow() {
+        if (photoShadowSelector.visibility == View.GONE) {
+            photoShadowSelector.visibility = View.VISIBLE
+        } else {
+            photoShadowSelector.visibility = View.GONE
+        }
+    }
+
+    private fun editColorFromPhoto() {
+        colorChangingRequestCode = 0
+
+        if (includerColorSideMenuLayout.visibility == View.VISIBLE) {
+            includerColorSideMenuLayout.visibility = View.GONE
+            sideSelector.visibility = View.VISIBLE
         } else {
             includerFontTypeTopMenuLayout.visibility = View.GONE
             includerFontSizeTopMenuLayout.visibility = View.GONE
             includerTextGravityLayout.visibility = View.GONE
-            includerFontColorTopMenuLayout.visibility = View.VISIBLE
+            sideSelector.visibility = View.GONE
+            includerColorSideMenuLayout.visibility = View.VISIBLE
+        }
+    }
+
+    private fun editColorFromText() {
+        colorChangingRequestCode = 1
+
+        if (includerColorSideMenuLayout.visibility == View.VISIBLE) {
+            includerColorSideMenuLayout.visibility = View.GONE
+            sideSelector.visibility = View.VISIBLE
+        } else {
+            includerFontTypeTopMenuLayout.visibility = View.GONE
+            includerFontSizeTopMenuLayout.visibility = View.GONE
+            includerTextGravityLayout.visibility = View.GONE
+            sideSelector.visibility = View.GONE
+            includerColorSideMenuLayout.visibility = View.VISIBLE
         }
     }
 
@@ -373,10 +517,12 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
 
         if (includerFontSizeTopMenuLayout.visibility == View.VISIBLE) {
             includerFontSizeTopMenuLayout.visibility = View.GONE
+            sideSelector.visibility = View.VISIBLE
         } else {
             includerFontTypeTopMenuLayout.visibility = View.GONE
-            includerFontColorTopMenuLayout.visibility = View.GONE
+            includerColorSideMenuLayout.visibility = View.GONE
             includerTextGravityLayout.visibility = View.GONE
+            sideSelector.visibility = View.GONE
             includerFontSizeTopMenuLayout.visibility = View.VISIBLE
         }
     }
@@ -384,20 +530,23 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
     private fun editFontType() {
         if (includerFontTypeTopMenuLayout.visibility == View.VISIBLE) {
             includerFontTypeTopMenuLayout.visibility = View.GONE
+            sideSelector.visibility = View.VISIBLE
         } else {
             includerFontSizeTopMenuLayout.visibility = View.GONE
-            includerFontColorTopMenuLayout.visibility = View.GONE
+            includerColorSideMenuLayout.visibility = View.GONE
             includerTextGravityLayout.visibility = View.GONE
+            sideSelector.visibility = View.GONE
             includerFontTypeTopMenuLayout.visibility = View.VISIBLE
         }
     }
 
     private fun setTextGravity() {
         includerFontSizeTopMenuLayout.visibility = View.GONE
-        includerFontColorTopMenuLayout.visibility = View.GONE
+        includerColorSideMenuLayout.visibility = View.GONE
         includerFontTypeTopMenuLayout.visibility = View.GONE
-        bottomLayout.visibility = View.GONE
+        bottomTextLayout.visibility = View.GONE
         text.visibility = View.GONE
+        sideSelector.visibility = View.GONE
         includerTextGravityLayout.visibility = View.VISIBLE
     }
 
@@ -427,7 +576,7 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         val fontName: String = fontList.get(position)
-        when(fontName){
+        when (fontName) {
             "arial" -> run {
                 text.typeface = ResourcesCompat.getFont(this, R.font.arial)
             }
@@ -478,5 +627,32 @@ class PostActivity : AppCompatActivity(), View.OnClickListener, SeekBar.OnSeekBa
 
     override fun onNothingSelected(parent: AdapterView<*>?) {
         Log.e("spinner", "onNothingSelected")
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+        if (resultCode != RESULT_OK || data == null) {
+            Toast.makeText(this, "Erro Inesperado, Tente novamente mais tarde!", Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
+
+        when (requestCode) {
+            1 -> {
+                val bundle = data.extras
+                val bitmap = bundle?.let {
+                    it.get("data")
+                } as Bitmap
+                photo.setImageBitmap(bitmap)
+            }
+            2 -> {
+                val inputStream = data.data?.let { contentResolver.openInputStream(it) }
+                val bitmap = BitmapFactory.decodeStream(inputStream)
+                photo.setImageBitmap(bitmap)
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data)
     }
 }

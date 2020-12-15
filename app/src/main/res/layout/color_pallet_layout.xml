@@ -76,4 +76,11 @@
         android:layout_height="24dp"
         android:layout_margin="8dp"
         android:background="@color/pink" />
+
+    <ImageView
+        android:id="@+id/color_transparent"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:background="@drawable/ic_color_transparent" />
 </LinearLayout>
